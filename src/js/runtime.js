@@ -8,13 +8,13 @@ var controls;
 var height;
 var width;
 
-var cube_size = 50;
-var cube_spacing = 2;
+var cube_size = 25;
+var cube_spacing = 0;
 var particleMaterial;
 
 var objects = [];
 
-var BACKGROUND_COLOR = 0xf0f0f0;
+var BACKGROUND_COLOR = 0xc0c0c0;
 
 
 
@@ -34,25 +34,43 @@ function onDocumentMouseDown(event) {
 	var vector = new THREE.Vector3( ( event.clientX / width ) * 2 - 1, - ( event.clientY / height ) * 2 + 1, 0.5 );
 	projector.unprojectVector( vector, camera );
 	var raycaster = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
-	var intersects = raycaster.intersectObjects( cube_array );
+	var intersects = raycaster.intersectObjects(cube_array);
 	console.log(intersects);
 	if ( intersects.length > 0 ) {
-
-					intersects[ 0 ].object.material.color.setHex( Math.random() * 0xffffff );
-
-					var particle = new THREE.Particle( particleMaterial );
-					particle.position = intersects[ 0 ].point;
-					console.log(intersects[0].point);
-					particle.scale.x = particle.scale.y = 10;
-					scene.add( particle );
-
-				}
+       getNewTexture(0, cube_size, true);
+		intersects[ 0 ].object.material.map  = new THREE.Texture(getNewTexture(Math.floor((Math.random() * 9)+1), cube_size, true))
+        intersects[ 0 ].object.material.map.needsUpdate = true;
+	}
 }
 
+function getNewTexture(number, size, selected) {
+    var x = document.createElement("canvas");
+    var context = x.getContext("2d");
+    x.width = x.height = size;
+    font_size = 10;
+    context.beginPath();
+    context.rect(0,0, x.width, x.height);
+    if (selected) {
+        context.fillStyle = "#326878";
+    } else {
+        context.fillStyle = "#e3edf7";
+    }
+    context.fill()
+    context.lineWidth = 2;
+    context.strokeStyle = "#ffffff";
+    context.stroke();
+    context.fillStyle = "9ba7b0";
+    context.font =  font_size.toString() + "px"; //font size should match cube size
+    context.textAlign = 'center';
+    context.fillText(number.toString(), x.width / 2, (x.height + font_size) / 2);
+    return x;
+}
 function returnNewCube() {
-	material = new THREE.MeshBasicMaterial({color: Math.random() + Math.random() * 0xffffff, opacity: 0.5});
+
+    var xm = new THREE.MeshBasicMaterial({ map: new THREE.Texture(getNewTexture(Math.floor((Math.random() * 9)+1), cube_size, false)), transparent: true });
+    xm.map.needsUpdate = true;
 	var geometry = new THREE.CubeGeometry(cube_size, cube_size, cube_size);
-	return new THREE.Mesh(geometry, material);
+	return new THREE.Mesh(geometry, xm);
 }
 
 function returnPos(cord) {
@@ -106,26 +124,16 @@ function initGameData() {
 	scene.add(camera);
 	controls = new THREE.OrbitControls(camera);
 	genCubes();
+    // add subtle ambient lighting
+    var ambientLight = new THREE.AmbientLight(0x555555);
+    scene.add(ambientLight);
+
+    // add directional light source
+    var directionalLight = new THREE.DirectionalLight(0x555555);
+    directionalLight.position.set(1, 1, 1).normalize();
+    scene.add(directionalLight);
 	console.log(cube_array);
 
-	particleMaterial = new THREE.ParticleCanvasMaterial( {
-
-					color: 0x000000,
-					program: function ( context ) {
-
-						context.beginPath();
-						context.arc( 0, 0, 1, 0, Math.PI * 2, true );
-						context.closePath();
-						context.fill();
-
-					}
-
-				} );
-
-
-	//var light = new THREE.PointLight(0xFFFF00);
-	//light.position.set(20,0,20);
-	//scene.add(light);
 	animate();
 
 }

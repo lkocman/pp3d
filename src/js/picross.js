@@ -34,7 +34,7 @@ function Picross3D() {
 		}
 	}
 
-	this.getXYZBlocksInRow= function(x,y,z) {
+	this.getXYZBlocksInRow = function(x,y,z) {
 		// returns mask ask (x,y,z)
 		// means there must n cubes on x axis, o cubes on y axis ...
 		var x_cubes = 0;
